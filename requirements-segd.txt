@@ -26,8 +26,9 @@ args==0.1.0
 array_record==0.7.2
 arrow==1.3.0
 arviz==0.21.0
-astropy==7.1.0
-astropy-iers-data==0.2025.7.21.0.41.39
+# astropy==7.1.0 requires Python >=3.11, not used in tile2net - commented out
+# astropy==7.1.0
+# astropy-iers-data==0.2025.7.21.0.41.39
 asttokens==3.0.0
 astunparse==1.6.3
 atpublic==5.1
@@ -55,7 +56,8 @@ Boruta==0.4.3
 boto3==1.40.39
 botocore==1.40.39
 Bottleneck==1.4.2
--e git+https://github.com/SohierDane/BigQuery_Helper@8615a7f6c1663e7f2d48aa2b32c2dbcb600a440f#egg=bq_helper
+# bq_helper is not used in the codebase and has installation issues - commented out
+# -e git+https://github.com/SohierDane/BigQuery_Helper@8615a7f6c1663e7f2d48aa2b32c2dbcb600a440f#egg=bq_helper
 bqplot==0.12.45
 branca==0.8.1
 Brotli==1.1.0
@@ -239,7 +241,8 @@ google-cloud-trace==1.16.2
 google-cloud-translate==3.12.1
 google-cloud-videointelligence==2.16.2
 google-cloud-vision==3.10.2
-google-colab @ file:///colabtools/dist/google_colab-1.0.0.tar.gz
+# google-colab is Colab-specific and not needed for local installation
+# google-colab @ file:///colabtools/dist/google_colab-1.0.0.tar.gz
 google-crc32c==1.7.1
 google-genai==1.27.0
 google-generativeai==0.8.5
@@ -351,7 +354,8 @@ jupyter-lsp==1.5.1
 jupyter-ydoc==0.2.5
 jupyter_client==8.6.3
 jupyter_core==5.8.1
-jupyter_kernel_gateway @ git+https://github.com/googlecolab/kernel_gateway@b134e9945df25c2dcb98ade9129399be10788671
+# jupyter_kernel_gateway is Colab-specific and not needed for local installation
+# jupyter_kernel_gateway @ git+https://github.com/googlecolab/kernel_gateway@b134e9945df25c2dcb98ade9129399be10788671
 jupyter_server==2.12.5
 jupyter_server_fileid==0.9.3
 jupyter_server_terminals==0.5.3
@@ -389,7 +393,8 @@ launchpadlib==1.10.16
 lazr.restfulclient==0.14.4
 lazr.uri==1.0.6
 lazy_loader==0.4
-learntools @ git+https://github.com/Kaggle/learntools@a0c08ac1fa73dd42ba4aecf2cce045752f14f72b
+# learntools is Kaggle-specific and not needed for local installation
+# learntools @ git+https://github.com/Kaggle/learntools@a0c08ac1fa73dd42ba4aecf2cce045752f14f72b
 libclang==18.1.1
 libcudf-cu12==25.2.2
 libcugraph-cu12==25.6.0
@@ -402,7 +407,8 @@ librmm-cu12==25.6.0
 librosa==0.11.0
 libucx-cu12==1.18.1
 libucxx-cu12==0.42.0
-lightgbm @ file:///tmp/lightgbm/LightGBM/dist/lightgbm-4.6.0-py3-none-linux_x86_64.whl
+# lightgbm from Colab local path - use PyPI version if needed: lightgbm==4.6.0
+# lightgbm @ file:///tmp/lightgbm/LightGBM/dist/lightgbm-4.6.0-py3-none-linux_x86_64.whl
 lightning-utilities==0.15.2
 lime==0.2.0.1
 line_profiler==5.0.0
@@ -494,7 +500,8 @@ nvidia-nvcomp-cu12==4.2.0.11
 nvidia-nvjitlink-cu12==12.4.127
 nvidia-nvtx-cu12==12.4.127
 nvtx==0.2.13
-nx-cugraph-cu12 @ https://pypi.nvidia.com/nx-cugraph-cu12/nx_cugraph_cu12-25.6.0-py3-none-any.whl
+# nx-cugraph-cu12 is RAPIDS package for CUDA 12, not used in tile2net - commented out
+# nx-cugraph-cu12 @ https://pypi.nvidia.com/nx-cugraph-cu12/nx_cugraph_cu12-25.6.0-py3-none-any.whl
 oauth2client==4.1.3
 oauthlib==3.3.1
 odfpy==1.4.1
@@ -715,7 +722,8 @@ scs==3.2.7.post2
 seaborn==0.12.2
 SecretStorage==3.3.3
 securesystemslib==1.3.1
-segment_anything @ git+https://github.com/facebookresearch/segment-anything.git@dca509fe793f601edb92606367a655c15ac00fdf
+# segment_anything is not used in tile2net codebase - commented out
+# segment_anything @ git+https://github.com/facebookresearch/segment-anything.git@dca509fe793f601edb92606367a655c15ac00fdf
 semantic-version==2.10.0
 semver==3.0.4
 Send2Trash==1.8.3
@@ -811,22 +819,28 @@ thinc==8.3.6
 threadpoolctl==3.6.0
 tifffile==2025.6.11
 tiktoken==0.9.0
--e git+https://github.com/mannadamay12/tile2net-segD@f0e43e45c047d6324f12fee76f803e2eb3ea9211#egg=tile2net
+# tile2net-segD - install locally with: pip install -e .
+# -e git+https://github.com/mannadamay12/tile2net-segD@f0e43e45c047d6324f12fee76f803e2eb3ea9211#egg=tile2net
 timm==1.0.19
 tinycss2==1.4.0
 tokenizers==0.21.2
 toml==0.10.2
 tomlkit==0.13.3
 toolz==1.0.0
-torch @ https://download.pytorch.org/whl/cu124/torch-2.6.0%2Bcu124-cp311-cp311-linux_x86_64.whl
+# PyTorch - Install separately based on your CUDA version
+# For CUDA 11.7 (as per README): pip install torch==2.0.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117
+# For CUDA 11.8: pip install torch==2.0.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+# For CUDA 12.1: pip install torch==2.0.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+# Check your CUDA version with: nvidia-smi
+# torch @ https://download.pytorch.org/whl/cu124/torch-2.6.0%2Bcu124-cp311-cp311-linux_x86_64.whl
 torchao==0.10.0
-torchaudio @ https://download.pytorch.org/whl/cu124/torchaudio-2.6.0%2Bcu124-cp311-cp311-linux_x86_64.whl
+# torchaudio @ https://download.pytorch.org/whl/cu124/torchaudio-2.6.0%2Bcu124-cp311-cp311-linux_x86_64.whl
 torchdata==0.11.0
 torchinfo==1.8.0
 torchmetrics==1.8.2
 torchsummary==1.5.1
 torchtune==0.6.1
-torchvision @ https://download.pytorch.org/whl/cu124/torchvision-0.21.0%2Bcu124-cp311-cp311-linux_x86_64.whl
+# torchvision @ https://download.pytorch.org/whl/cu124/torchvision-0.21.0%2Bcu124-cp311-cp311-linux_x86_64.whl
 tornado==6.5.2
 TPOT==0.12.1
 tqdm==4.67.1
