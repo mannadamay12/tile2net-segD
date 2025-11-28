@@ -15,10 +15,11 @@ We have successfully completed the foundational pipeline for analyzing Tile2Net 
 ## What We've Accomplished
 
 ### 1. Model Setup & Integration
-- ✅ Loaded pre-trained Tile2Net HRNet-W48 model
-- ✅ Fixed configuration issues for inference
+- ✅ Loaded pre-trained Tile2Net HRNet-W48 model (MscaleOCR architecture)
+- ✅ Fixed configuration issues for inference (MSCALE, TORCH_VERSION, MSCALE_LO_SCALE)
+- ✅ Created `ModelWrapper` class to make MscaleOCR compatible with pytorch-grad-cam
 - ✅ Integrated pytorch-grad-cam for explainability
-- ✅ Successfully ran inference on aerial imagery tiles
+- ✅ Successfully ran inference on aerial imagery tiles (Kaggle Tesla T4 GPU)
 
 ### 2. GradCAM Implementation
 - ✅ Identified target layers across HRNet stages (Stage 2, 3, 4)
@@ -27,23 +28,53 @@ We have successfully completed the foundational pipeline for analyzing Tile2Net 
   - Class 1: Road
   - Class 2: Crosswalk
   - Class 3: Background
-- ✅ Visualized multi-scale feature attention across different HRNet branches
+- ✅ Visualized multi-scale feature attention across 6 HRNet branches:
+  - `Stage2-HighRes`: backbone.stage2[-1].branches[0][-1]
+  - `Stage2-LowRes`: backbone.stage2[-1].branches[1][-1]
+  - `Stage3-HighRes`: backbone.stage3[-1].branches[0][-1]
+  - `Stage3-MidRes`: backbone.stage3[-1].branches[1][-1]
+  - `Stage4-HighRes`: backbone.stage4[-1].branches[0][-1]
+  - `Stage4-LowRes`: backbone.stage4[-1].branches[3][-1]
 - ✅ Confirmed different stages focus on different features:
-  - **Stage 2**: Fine edges and boundaries
-  - **Stage 3**: Mid-level semantic features
-  - **Stage 4**: High-level context and object recognition
+  - **Stage 2**: Fine edges and boundaries (2 branches)
+  - **Stage 3**: Mid-level semantic features (3 branches)
+  - **Stage 4**: High-level context and object recognition (4 branches)
 
 ### 3. Ground Truth Comparison Pipeline
-- ✅ Generated NYC tile (Washington Square Park area)
-- ✅ Downloaded NYC Planimetric sidewalk ground truth (15 polygons)
-- ✅ Converted pixel predictions to georeferenced polygons
+- ✅ Generated NYC tile (Washington Square Park area, bbox: [40.7285, -73.999, 40.731, -73.995])
+- ✅ Downloaded NYC Planimetric sidewalk ground truth via Open Data API:
+  - URL: `https://data.cityofnewyork.us/resource/52n9-sdep.geojson`
+  - Query: `within_box(the_geom, north, west, south, east)`
+  - Retrieved 15 MultiPolygon features
+- ✅ Converted pixel predictions to georeferenced polygons using rasterio:
+  - Used `rasterio.transform.from_bounds()` for affine transformation
+  - Pixel size: ~0.00000536° lon/pixel, ~0.00000407° lat/pixel
+  - Created GeoDataFrames with EPSG:4326 CRS
 - ✅ Calculated quantitative metrics (IoU, Precision, Recall, F1)
 - ✅ Identified and visualized error patterns (false positives/negatives)
+- ✅ Rasterized false positive geometry for targeted GradCAM analysis
 
 ### 4. Error Analysis with GradCAM
-- ✅ Applied GradCAM specifically to error regions
+- ✅ Applied GradCAM specifically to error regions using `SemanticSegmentationTarget`
+- ✅ Rasterized false positive polygons using `rasterio.features.rasterize()`
+- ✅ Generated attention heatmaps for 256,195 false positive pixels (24.4% of image)
 - ✅ Explained model decision-making on false positives
-- ✅ Discovered root cause of failures
+- ✅ Discovered root cause of failures: texture-based classification without spatial context
+
+### 5. Technical Implementation (Notebook: 02-tile2net.ipynb)
+- ✅ Full pipeline running on Kaggle with Tesla T4 GPU
+- ✅ Dependencies: pytorch-grad-cam, geopandas, rasterio, shapely
+- ✅ Model configuration:
+  ```python
+  cfg.MODEL.ARCH = 'ocrnet.HRNet_Mscale'
+  cfg.DATASET.NUM_CLASSES = 4
+  cfg.MODEL.OCR.MID_CHANNELS = 512
+  cfg.MODEL.OCR.KEY_CHANNELS = 256
+  cfg.MODEL.MSCALE = True
+  cfg.MODEL.MSCALE_LO_SCALE = 0.5
+  ```
+- ✅ Preprocessing: ImageNet normalization (mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+- ✅ Output: 1024x1024 prediction masks for stitched tiles (4x4 base tiles)
 
 ---
 
@@ -589,6 +620,7 @@ segmentation-detective/
 | Oct 28     | MVP: Tile2Net + GradCAM backend              | ✅ Complete |
 | Nov 4      | Multi-layer GradCAM support                  | ✅ Complete |
 | Nov 8      | Ground truth comparison pipeline             | ✅ Complete |
+| Nov 28     | Full NYC pipeline + GradCAM on error regions | ✅ Complete |
 | Nov 11     | **Expand to 10+ tiles, error taxonomy**      | 🔄 Next     |
 | Nov 18     | **FastAPI backend + dashboard prototype**    | 📋 Upcoming |
 | Nov 25     | **User evaluation, collect feedback**        | 📋 Upcoming |
@@ -600,11 +632,11 @@ segmentation-detective/
 ## Success Criteria
 
 ### Minimum Viable Product (Must Have)
-- ✅ GradCAM working for all 4 classes
-- ✅ Ground truth comparison for at least 5 tiles
-- ✅ Dashboard showing predictions + errors + explanations
-- ✅ Quantitative metrics (IoU, Precision, Recall, F1)
-- ✅ Final report with findings
+- ✅ GradCAM working for all 4 classes (implemented in 02-tile2net.ipynb)
+- 🔄 Ground truth comparison for at least 5 tiles (1/5 complete - Washington Square Park)
+- 📋 Dashboard showing predictions + errors + explanations (notebook visualizations done, web dashboard pending)
+- ✅ Quantitative metrics (IoU, Precision, Recall, F1) - all implemented and calculated
+- 📋 Final report with findings
 
 ### Stretch Goals (Nice to Have)
 - ⬜ 50+ tile analysis with statistical significance
