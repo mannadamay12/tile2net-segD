@@ -21,13 +21,15 @@ We have successfully completed the foundational pipeline for analyzing Tile2Net 
 - ✅ Integrated pytorch-grad-cam for explainability
 - ✅ Successfully ran inference on aerial imagery tiles (Kaggle Tesla T4 GPU)
 
-### 2. GradCAM Implementation
+### 2. XAI Methods Implementation
 - ✅ Identified target layers across HRNet stages (Stage 2, 3, 4)
-- ✅ Implemented GradCAM for all 4 segmentation classes:
-  - Class 0: Sidewalk
-  - Class 1: Road
+- ✅ Implemented multiple XAI methods for all 4 segmentation classes:
+  - Class 0: Road
+  - Class 1: Sidewalk
   - Class 2: Crosswalk
   - Class 3: Background
+
+**GradCAM (pytorch-grad-cam):**
 - ✅ Visualized multi-scale feature attention across 6 HRNet branches:
   - `Stage2-HighRes`: backbone.stage2[-1].branches[0][-1]
   - `Stage2-LowRes`: backbone.stage2[-1].branches[1][-1]
@@ -39,6 +41,32 @@ We have successfully completed the foundational pipeline for analyzing Tile2Net 
   - **Stage 2**: Fine edges and boundaries (2 branches)
   - **Stage 3**: Mid-level semantic features (3 branches)
   - **Stage 4**: High-level context and object recognition (4 branches)
+
+**LayerCAM (pytorch-grad-cam):**
+- ✅ Multi-layer aggregation from Stage2, Stage3, Stage4
+- ✅ Combines gradients from multiple resolution branches
+- ✅ More detailed spatial information than single-layer methods
+
+**ScoreCAM (pytorch-grad-cam):**
+- ✅ Gradient-free method using model confidence scores
+- ✅ Resized input to 256x256 for memory efficiency
+- ✅ Applied to Stage2/3/4 HighRes branches
+
+**Integrated Gradients (Captum):**
+- ✅ Custom `IGWrapper` class for class-specific scalar output
+- ✅ Baseline: black image with same normalization
+- ✅ Integration with n_steps=50
+- ✅ Visualizations: heatmap, overlay, positive attribution, top 20% important pixels
+
+**Confidence Maps (PyTorch softmax):**
+- ✅ Per-class probability maps using F.softmax on logits
+- ✅ Overall confidence map (predicted class probability per pixel)
+- ✅ Probability range visualization [0, 1]
+
+**XRAI (saliency library):**
+- ✅ Custom `XRAINetWrapperClassSpecific` class for model adaptation
+- ✅ Region-based attribution with better boundary detection
+- ✅ Visualizations: normalized attribution, positive overlay, top 10% important pixels
 
 ### 3. Ground Truth Comparison Pipeline
 - ✅ Generated NYC tile (Washington Square Park area, bbox: [40.7285, -73.999, 40.731, -73.995])
@@ -61,9 +89,33 @@ We have successfully completed the foundational pipeline for analyzing Tile2Net 
 - ✅ Explained model decision-making on false positives
 - ✅ Discovered root cause of failures: texture-based classification without spatial context
 
-### 5. Technical Implementation (Notebook: 02-tile2net.ipynb)
-- ✅ Full pipeline running on Kaggle with Tesla T4 GPU
+### 5. Technical Implementation
+
+**Notebook 01-tile2net.ipynb (Initial Prototype):**
+- ✅ Massachusetts example data (Boston area: 42.35°N, -71.07°W)
+- ✅ Established Kaggle environment with Tesla T4 GPU
+- ✅ Created ModelWrapper class for GradCAM compatibility
+- ✅ HRNet backbone structure analysis (stages 2, 3, 4 with multi-resolution branches)
+- ✅ Initial GradCAM visualization on Sidewalk class
+
+**Notebook 01_tile2net_corrected_confmaps.ipynb (Extended XAI Methods):**
+- ✅ LayerCAM: Multi-layer aggregation visualization
+- ✅ ScoreCAM: Gradient-free confidence-based attribution
+- ✅ Integrated Gradients: Captum library with IGWrapper class
+- ✅ Confidence Maps: Per-class probability and overall confidence visualization
+- ✅ XRAI: Region-based attribution with XRAINetWrapperClassSpecific class
+- ✅ Memory optimization: Resized inputs to 256x256 for ScoreCAM/IG/XRAI
+- ✅ Dependencies: pytorch-grad-cam, captum, saliency
+
+**Notebook 02-tile2net.ipynb (NYC + Ground Truth Pipeline):**
+- ✅ Extended to NYC Washington Square Park data
+- ✅ Added ground truth comparison pipeline
+- ✅ Implemented quantitative metrics (IoU, Precision, Recall, F1)
+- ✅ GradCAM on all 4 classes and error regions
 - ✅ Dependencies: pytorch-grad-cam, geopandas, rasterio, shapely
+
+**Common Configuration:**
+- ✅ Full pipeline running on Kaggle with Tesla T4 GPU
 - ✅ Model configuration:
   ```python
   cfg.MODEL.ARCH = 'ocrnet.HRNet_Mscale'
@@ -269,223 +321,95 @@ GradCAM analysis revealed the model makes decisions based on:
 
 ---
 
-### Phase 2: Backend Development (Week of Nov 11-18)
+### Phase 2: Interactive Presentation Notebook (Week of Nov 28 - Dec 5)
 
-#### 2.1 Build FastAPI Backend
-**Goal:** Create REST API for on-demand segmentation + GradCAM generation.
+> **Note:** Backend/dashboard development deprioritized due to compute access limitations. Focus shifted to pre-computed interactive notebook format for in-class presentation.
 
-**Endpoints:**
+#### 2.1 Create Story-Format Presentation Notebook
+**Goal:** Build an interactive Jupyter notebook that tells the story of our findings.
 
-**`POST /explain`**
-- **Input:**
-  - `file`: Uploaded tile image (PNG/JPG)
-  - `target_class`: Class to explain (0-3)
-  - `layer`: Which HRNet layer to visualize (e.g., "stage4-high")
+**Notebook Structure:**
 
-- **Output:**
-  ```json
-  {
-    "prediction": [[0, 1, 2, ...], ...],  // 2D array of class predictions
-    "gradcam": "base64_encoded_heatmap_image",
-    "class_distribution": {
-      "Sidewalk": 0.259,
-      "Road": 0.123,
-      "Crosswalk": 0.016,
-      "Background": 0.602
-    },
-    "metrics": {
-      "iou": 0.049,
-      "precision": 0.057,
-      "recall": 0.262,
-      "f1": 0.093
-    }
-  }
-  ```
+**Section 1: Introduction & Problem Statement**
+- What is Tile2Net and why explainability matters
+- Research questions we're answering
+- Interactive: Show example tile with prediction overlay
 
-**`GET /tiles`**
-- List available pre-generated tiles with metadata
-- Return: `[{id, name, location, bbox, metrics}, ...]`
+**Section 2: Model Architecture Deep Dive**
+- HRNet-W48 multi-resolution structure visualization
+- How OCRNet handles semantic segmentation
+- Interactive: Diagram of stage2/3/4 branches
 
-**`GET /layers`**
-- List available HRNet layers for GradCAM
-- Return: `["stage2-high", "stage2-low", "stage3-high", ...]`
+**Section 3: XAI Methods Comparison**
+- Side-by-side comparison of all 6 methods:
+  - GradCAM, LayerCAM, ScoreCAM
+  - Integrated Gradients, XRAI, Confidence Maps
+- Interactive: Dropdown/tabs to switch between methods
+- Pre-computed results for 3-5 example tiles
 
-**`POST /ground_truth`**
-- **Input:** `bbox` (geographic bounds)
-- **Output:** GeoJSON of NYC sidewalk ground truth in that area
+**Section 4: Ground Truth Analysis**
+- NYC sidewalk ground truth comparison
+- Error visualization (TP/FP/FN maps)
+- Interactive: Slider to toggle overlays
+- Quantitative metrics table
 
-**File Structure:**
-```
-segmentation-detective/
-├── backend/
-│   ├── app.py              # FastAPI application
-│   ├── models.py           # Model loading and caching
-│   ├── inference.py        # Segmentation inference logic
-│   ├── gradcam_utils.py    # GradCAM generation
-│   ├── ground_truth.py     # NYC API integration
-│   └── requirements.txt    # Dependencies
-└── frontend/               # (Phase 3)
-```
+**Section 5: Key Findings & Insights**
+- Why park paths cause false positives
+- GradCAM activation patterns on error regions
+- Model limitations: texture vs context
 
-**Key Implementation Details:**
-- Cache loaded model in memory (avoid reloading on each request)
-- Use async/await for I/O operations (ground truth downloads)
-- Add request validation (tile size limits, class bounds)
-- Return CORS headers for frontend integration
+**Section 6: Conclusions & Future Work**
+- Summary of contributions
+- Recommendations for Tile2Net improvement
 
-#### 2.2 Optimize Model Loading
-**Goal:** Reduce latency for interactive use.
+**Interactive Features (using ipywidgets):**
+- Dropdown selectors for XAI method, class, tile
+- Sliders for overlay opacity
+- Toggle buttons for showing/hiding layers
+- Pre-rendered images loaded on selection
 
-**Optimizations:**
-- Load model once at startup, keep in GPU memory
-- Pre-load frequently used layers for GradCAM
-- Implement request batching if multiple tiles requested
-- Add health check endpoint for monitoring
+#### 2.2 Pre-compute All Visualizations
+**Goal:** Generate all visualizations ahead of time for smooth presentation.
+
+**Assets to Pre-generate:**
+- 5-10 example tiles from different contexts:
+  - Parks (high FP)
+  - Residential streets
+  - Commercial areas
+  - Intersections with crosswalks
+- For each tile:
+  - Original image
+  - Segmentation prediction
+  - Ground truth overlay (where available)
+  - GradCAM for all 4 classes
+  - LayerCAM, ScoreCAM, IG, XRAI visualizations
+  - Confidence maps
+  - Error maps (TP/FP/FN)
+
+**Storage:** Save as PNG files in `segmentation-detective/assets/` directory
 
 ---
 
-### Phase 3: Interactive Dashboard (Week of Nov 18-25)
+### Phase 3: Finalize Examples & Metrics (Week of Dec 2-5)
 
-#### 3.1 Frontend Design
-**Goal:** Build web interface for exploring segmentation errors.
+#### 3.1 Curate Example Tiles
+**Goal:** Select diverse examples that demonstrate key findings.
 
-**Framework:** React or Streamlit (recommend Streamlit for speed)
+**Example Categories:**
+1. **High False Positive** - Park paths, plazas (Washington Square Park)
+2. **High True Positive** - Clear street-adjacent sidewalks
+3. **Occlusion Challenges** - Tree shadows, vegetation
+4. **Crosswalk Detection** - Intersection examples
+5. **Edge Cases** - Parking lots, building edges
 
-**Dashboard Components:**
+#### 3.2 Compile Quantitative Results
+**Goal:** Create summary tables and figures for presentation.
 
-**Component 1: Tile Explorer**
-- Map view showing available tiles (using Leaflet.js)
-- Click tile to load visualization
-- Filter by error type, context, or metrics
-
-**Component 2: Prediction Viewer**
-- 4-panel layout:
-  1. Original aerial image
-  2. Segmentation prediction (color-coded)
-  3. Ground truth overlay
-  4. Error map (TP/FP/FN)
-
-**Component 3: GradCAM Inspector**
-- Dropdown to select HRNet layer
-- Slider to adjust overlay opacity
-- Side-by-side: Original | GradCAM | Overlay
-- Show activation statistics (mean, max, distribution)
-
-**Component 4: Metrics Dashboard**
-- Summary statistics (IoU, Precision, Recall, F1)
-- Class-wise breakdown
-- Error type distribution (pie chart)
-- Comparison across multiple tiles (bar chart)
-
-**Component 5: Error Filter & Search**
-- Filter tiles by:
-  - Error type (park paths, shadows, occlusion)
-  - Context (residential, commercial, park)
-  - Performance (IoU range, F1 score)
-- Search by location name or coordinates
-
-**Component 6: Explanation Panel**
-- Show why model made a decision
-- List top activated features
-- Compare correct vs incorrect predictions
-- Suggest potential fixes
-
-**Wireframe (ASCII):**
-```
-+--------------------------------------------------+
-|  [Map View]  |  [Tile: Washington Square Park]  |
-|              |  IoU: 0.049 | F1: 0.093          |
-|  [Tile Grid] |  [Original] [Prediction] [Errors] |
-|              |  [GradCAM Layer: Stage4-High ▼]  |
-|              |  [Heatmap Visualization]          |
-|              |  [Metrics] [Explanation Panel]    |
-+--------------------------------------------------+
-```
-
-#### 3.2 Interactivity Features
-
-**Click-to-Explain:**
-- User clicks on any pixel in the image
-- Dashboard highlights:
-  - Predicted class at that location
-  - Ground truth class (if available)
-  - GradCAM heatmap centered on that pixel
-  - Top-3 features contributing to decision
-
-**Compare Mode:**
-- Select 2+ tiles
-- Show side-by-side comparison
-- Highlight differences in error patterns
-
-**Export Functionality:**
-- Download current visualization as PNG
-- Export metrics as CSV
-- Generate PDF report with findings
-
----
-
-### Phase 4: Evaluation & User Testing (Week of Nov 25 - Dec 2)
-
-#### 4.1 Quantitative Evaluation
-
-**Metric Collection:**
-- Run pipeline on 50+ tiles across NYC
-- Calculate aggregate statistics:
-  - Mean/median IoU, Precision, Recall, F1
-  - Standard deviation (measure consistency)
-  - Per-class performance breakdown
-  - Error type frequency distribution
-
-**Comparative Analysis:**
-- Compare performance across contexts:
-  - Urban vs suburban
-  - Day vs night imagery (if available)
-  - Different seasons/years
-  - Different NYC boroughs
-
-**Attention-Error Correlation:**
-- Measure correlation between:
-  - GradCAM activation strength → False positive rate
-  - Low activation → False negative rate
-  - Activation uniformity → Prediction confidence
-
-**Deliverable:**
-- Table of results for final report
-- Figures showing performance distributions
-- Statistical tests (t-test, ANOVA) for context differences
-
-#### 4.2 Qualitative User Study
-
-**Participants:**
-- 5-10 users from:
-  - Urban planning students
-  - GIS practitioners
-  - Tile2Net developers
-  - Domain experts (transportation engineers)
-
-**Tasks:**
-1. **Error Identification:** "Find 5 segmentation errors in this tile"
-   - Measure: Time to find, accuracy
-
-2. **Error Explanation:** "Why did the model make this mistake?"
-   - With GradCAM vs without GradCAM
-   - Measure: Explanation quality, confidence
-
-3. **Dashboard Usability:** "Use the dashboard to find all park path false positives"
-   - Measure: Task completion rate, time, user satisfaction
-
-4. **Feature Feedback:** "What additional features would help?"
-   - Collect qualitative feedback
-
-**Metrics:**
-- Task completion time
-- Accuracy of error identification
-- User satisfaction score (1-5 Likert scale)
-- Qualitative feedback (open-ended)
-
-**Deliverable:**
-- User study report
-- Dashboard improvements based on feedback
+**Metrics to Include:**
+- Per-tile: IoU, Precision, Recall, F1
+- Per-class breakdown
+- Error type distribution
+- XAI method comparison (qualitative)
 
 ---
 
@@ -550,29 +474,23 @@ segmentation-detective/
 
 ---
 
-## Technical Stack Recommendations
+## Technical Stack
 
-### Backend
-- **Framework:** FastAPI (async, fast, auto-docs)
-- **Model:** PyTorch + pytorch-grad-cam
+### Core Libraries
+- **Model:** PyTorch + MscaleOCR (HRNet-W48)
+- **XAI Methods:**
+  - pytorch-grad-cam (GradCAM, LayerCAM, ScoreCAM)
+  - Captum (Integrated Gradients)
+  - saliency (XRAI)
 - **Geospatial:** GeoPandas, Rasterio, Shapely
 - **Ground Truth:** Requests (NYC Open Data API)
+- **Visualization:** Matplotlib, PIL
 
-### Frontend
-- **Option 1 (Quick):** Streamlit
-  - Pros: Fast development, built-in widgets
-  - Cons: Less customizable, slower for large images
-
-- **Option 2 (Robust):** React + Leaflet + Plotly
-  - Pros: Full control, better performance, interactive maps
-  - Cons: Longer development time
-
-### Deployment
-- **Local Demo:** Docker Compose (backend + frontend)
-- **Cloud (Optional):**
-  - Backend: AWS Lambda or Google Cloud Run
-  - Frontend: Vercel or Netlify
-  - Storage: S3 for tiles and results
+### Presentation Notebook
+- **Interactive Widgets:** ipywidgets (dropdowns, sliders, toggles)
+- **Image Display:** IPython.display, PIL
+- **Pre-computed Assets:** PNG files in `assets/` directory
+- **Platform:** Jupyter Notebook / Google Colab / Kaggle
 
 ---
 
@@ -584,31 +502,32 @@ segmentation-detective/
 **Solution:**
 - Use Rasterio's `from_bounds()` for proper affine transforms
 - Validate with known ground truth features
-- Add visual overlay checks in dashboard
+- Add visual overlay checks in notebook
 
 ### Challenge 2: Model Memory Usage
 **Issue:** HRNet-W48 + GradCAM requires significant GPU memory.
 
 **Solution:**
 - Use single GPU, batch size 1
-- Clear CUDA cache between requests
-- Implement model quantization if needed (FP16)
+- Clear CUDA cache between XAI method calls
+- Resize images to 256x256 for memory-intensive methods (ScoreCAM, IG, XRAI)
 
 ### Challenge 3: Ground Truth Limitations
 **Issue:** NYC ground truth doesn't match model's learned concept.
 
 **Solution:**
 - Acknowledge in report as a finding, not a bug
-- Consider secondary validation with OpenStreetMap
-- Create custom annotations for key error examples
+- Use this mismatch as a key insight for presentation
+- Explain difference between "visual sidewalk" vs "urban planning sidewalk"
 
-### Challenge 4: Real-time Interactivity
-**Issue:** GradCAM generation takes 2-5 seconds per tile.
+### Challenge 4: No Compute Access for Presentation
+**Issue:** Cannot run live inference during in-class presentation.
 
 **Solution:**
-- Pre-generate GradCAM for common layers
-- Show loading spinner in UI
-- Cache results for previously viewed tiles
+- Pre-compute all visualizations on Kaggle/Colab
+- Save as PNG files in `assets/` directory
+- Load pre-rendered images in presentation notebook
+- Use ipywidgets to switch between pre-computed results
 
 ---
 
@@ -620,12 +539,14 @@ segmentation-detective/
 | Oct 28     | MVP: Tile2Net + GradCAM backend              | ✅ Complete |
 | Nov 4      | Multi-layer GradCAM support                  | ✅ Complete |
 | Nov 8      | Ground truth comparison pipeline             | ✅ Complete |
+| Nov 28     | Extended XAI methods (LayerCAM, ScoreCAM, IG, XRAI, Confidence Maps) | ✅ Complete |
 | Nov 28     | Full NYC pipeline + GradCAM on error regions | ✅ Complete |
-| Nov 11     | **Expand to 10+ tiles, error taxonomy**      | 🔄 Next     |
-| Nov 18     | **FastAPI backend + dashboard prototype**    | 📋 Upcoming |
-| Nov 25     | **User evaluation, collect feedback**        | 📋 Upcoming |
-| Dec 2      | **Prepare final report figures**             | 📋 Upcoming |
-| Dec 11     | **Submit final report & demo video**         | 📋 Upcoming |
+| Dec 2-5    | **Interactive presentation notebook**        | 🔄 Next     |
+| Dec 5-8    | **Pre-compute visualizations for examples**  | 📋 Upcoming |
+| Dec 8-11   | **Final report + presentation prep**         | 📋 Upcoming |
+| Dec 11     | **In-class presentation**                    | 📋 Upcoming |
+
+> **Pivot:** Backend/dashboard development deprioritized. Focus on interactive Jupyter notebook with pre-computed visualizations for in-class presentation.
 
 ---
 
@@ -633,17 +554,18 @@ segmentation-detective/
 
 ### Minimum Viable Product (Must Have)
 - ✅ GradCAM working for all 4 classes (implemented in 02-tile2net.ipynb)
-- 🔄 Ground truth comparison for at least 5 tiles (1/5 complete - Washington Square Park)
-- 📋 Dashboard showing predictions + errors + explanations (notebook visualizations done, web dashboard pending)
+- ✅ Multiple XAI methods implemented (GradCAM, LayerCAM, ScoreCAM, IG, XRAI, Confidence Maps)
+- 🔄 Ground truth comparison for at least 3-5 tiles (1/5 complete - Washington Square Park)
+- 📋 Interactive presentation notebook with pre-computed visualizations
 - ✅ Quantitative metrics (IoU, Precision, Recall, F1) - all implemented and calculated
 - 📋 Final report with findings
+- 📋 In-class presentation
 
 ### Stretch Goals (Nice to Have)
-- ⬜ 50+ tile analysis with statistical significance
-- ⬜ User study with 10+ participants
-- ⬜ Deployed web dashboard (public URL)
-- ⬜ Interactive error annotation tool
-- ⬜ Comparison with other XAI methods (LayerCAM, ScoreCAM)
+- ⬜ 10+ tile analysis across diverse contexts
+- ⬜ Interactive ipywidgets for method/class selection
+- ⬜ Animated GIF comparisons of XAI methods
+- ✅ Comparison with other XAI methods (LayerCAM, ScoreCAM, Integrated Gradients, XRAI, Confidence Maps)
 
 ---
 
