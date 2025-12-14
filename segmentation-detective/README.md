@@ -1,9 +1,12 @@
 # Segmentation Detective
-
 Segmentation Detective has two parts:
 
 1. **A lightweight D3/Canvas UI** for browsing pre-exported tiles + XAI layers.
 2. **Notebooks** used to run Tile2Net inference and generate XAI artifacts (GradCAM, LayerCAM, ScoreCAM, Integrated Gradients, XRAI, confidence maps) on specific examples.
+
+
+<img width="3697" height="1805" alt="image" src="https://github.com/user-attachments/assets/795bf4bd-60f6-42f2-b505-2c745b785ff9" />
+
 
 ---
 
@@ -17,7 +20,7 @@ The UI loads a tile (RGB) plus optional overlays, then lets you explore XAI laye
 
 It also builds a **histogram from the confidence image** and lets you brush a range to highlight “risky” pixels inside the lens.
 
-### Quick run (local)
+### Quick run
 You must serve the folder over HTTP (because the UI uses ES modules + `fetch`).
 
 ```bash
@@ -28,6 +31,8 @@ python3 -m http.server 8000
 Open:
 
 - http://localhost:8000
+
+<img width="2880" height="1616" alt="image" src="https://github.com/user-attachments/assets/85eac418-8305-40cb-91c8-b851c5172663" />
 
 ### Data layout (assets)
 The UI is driven by:
@@ -109,41 +114,6 @@ These notebooks were primarily run in **Kaggle/Colab** (GPU recommended). They i
 - Some flows download or reference model weights (HRNet ImageNet pretrain + Tile2Net segmentation checkpoint). In the original runs this was often handled via Kaggle datasets / explicit paths.
 
 ### Notebook index
-
-#### `01_tile2net.ipynb`
-**Purpose:** Baseline pipeline on the example tile(s).
-
-Covers:
-- Generate example tiles via `examples/example.sh`
-- Load Tile2Net segmentation model (`MscaleOCR` / HRNet-W48)
-- Run inference and visualize the predicted mask
-- Inspect HRNet stages/branches and run **GradCAM** across multiple target layers
-
-
-#### `01_tile2net_corrected_confmaps.ipynb`
-**Purpose:** Extended XAI methods and confidence maps (includes fixes/diagnostics).
-
-Covers (in addition to the above):
-- **LayerCAM**
-- **ScoreCAM** (typically with resized inputs to reduce memory)
-- **Integrated Gradients** (Captum; wrapper to produce scalar class-specific output)
-- **Confidence / probability maps** (softmax + predicted-class confidence)
-- **XRAI** (Saliency library; wrapper compatible with XRAI call signature)
-
-
-#### `02-tile2net.ipynb`
-**Purpose:** NYC case study + ground truth comparison + error-region GradCAM.
-
-Covers:
-- Generate an NYC raster tile (Washington Square Park example) using `tile2net.Raster`
-- Download NYC sidewalk ground truth via Socrata:
-  - `https://data.cityofnewyork.us/resource/52n9-sdep.geojson`
-  - query uses `within_box(the_geom, north, west, south, east)`
-- Convert/rasterize geometries to align with the image
-- Compute metrics (**IoU, precision, recall, F1**) from polygon intersections/unions
-- Derive false-positive regions and run **GradCAM targeted on error masks**
-
-
 #### `presentation.ipynb`
 **Purpose:** Consolidated “story” notebook used for presenting the results.
 
@@ -152,25 +122,6 @@ Covers:
 - Model loading + inference
 - Multiple XAI methods (GradCAM / LayerCAM / ScoreCAM / IG / XRAI)
 - Confidence maps and the NYC ground-truth comparison
-
-### Running notebooks locally (minimal)
-If you want to run locally instead of Kaggle/Colab, start from the repo root:
-
-```bash
-cd tile2net-segD
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e .
-pip install grad-cam captum saliency
-```
-
-Then open the notebook files under `segmentation-detective/notebooks/` in Jupyter.
-
-Notes:
-- GPU is strongly recommended for GradCAM/ScoreCAM/IG/XRAI on large tiles.
-- You will need to provide paths to the model weights if they are not already available in your environment.
-
----
 
 ## Where the UI assets come from
 The D3 UI is intended to visualize **precomputed PNG exports** (input tile + confidence + XAI overlays) produced by the notebooks. To publish a new example in the UI:
