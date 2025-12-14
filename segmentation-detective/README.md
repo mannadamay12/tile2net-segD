@@ -129,3 +129,8 @@ The D3 UI is intended to visualize **precomputed PNG exports** (input tile + con
 1. Export images from a notebook into a `segdetect-d3/assets/tiles/<tileId>/...` folder.
 2. Register the tile in `segdetect-d3/assets/manifest.json`.
 3. Re-run the UI server (`python3 -m http.server`).
+
+
+**Please find all the code for High Compute Resources Here ** 
+[Colab NoteBook](https://colab.research.google.com/drive/1BTUeYGuQwXAL1hOt1bmjqpPoIrBk9-Et?usp=sharing)
+This has all cells with the result output for one image at a time 
