@@ -1,0 +1,70 @@
+{
+  "appTitle": "Segmentation Detective",
+  "assetVersion": "2025-12-14",
+  "classes": [
+    { "id": 0, "name": "background", "fileKey": "background" },
+    { "id": 1, "name": "sidewalk", "fileKey": "sidewalk" },
+    { "id": 2, "name": "road", "fileKey": "road" },
+    { "id": 3, "name": "crosswalk", "fileKey": "crosswalk" }
+  ],
+  "methods": [
+    {
+      "id": "confidence",
+      "label": "Confidence",
+      "kind": "grayscale",
+      "colormap": "magma",
+      "usesClass": false
+    },
+    {
+      "id": "gradcam",
+      "label": "GradCAM",
+      "kind": "heatmap",
+      "colormap": "inferno",
+      "usesClass": true
+    },
+    {
+      "id": "layercam",
+      "label": "LayerCAM",
+      "kind": "heatmap",
+      "colormap": "plasma",
+      "usesClass": true
+    },
+    {
+      "id": "scorecam",
+      "label": "ScoreCAM",
+      "kind": "heatmap",
+      "colormap": "turbo",
+      "usesClass": true
+    },
+    {
+      "id": "ig",
+      "label": "Integrated Gradients",
+      "kind": "heatmap",
+      "colormap": "cividis",
+      "usesClass": true
+    },
+    {
+      "id": "xrai",
+      "label": "XRAI",
+      "kind": "heatmap",
+      "colormap": "viridis",
+      "usesClass": true
+    }
+  ],
+  "tiles": [
+    {
+      "id": "city_001",
+      "label": "Input Tile",
+      "base": {
+        "input": "assets/tiles/city_001/base/input.png",
+        "prediction": null,
+        "gt": null,
+        "errorMap": null
+      },
+      "xai": {
+        "confidence": "assets/tiles/city_001/xai/confidence.png"
+      },
+      "confidenceMeaning": "confidence"
+    }
+  ]
+}

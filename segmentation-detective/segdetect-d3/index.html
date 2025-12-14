@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Segmentation Detective — D3</title>
+    <link rel="stylesheet" href="styles/main.css" />
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-scale-chromatic@3"></script>
+  </head>
+  <body>
+    <header>
+      <h1 id="appTitle">Segmentation Detective</h1>
+      <div class="sub">Explore segmentation outputs and XAI layers like a forensic investigation: select a tile, choose a method/class, and use the flashlight to reveal attention/uncertainty.</div>
+    </header>
+
+    <div class="container">
+      <section class="panel controls">
+        <div class="panel-header">
+          <h2>Controls</h2>
+          <button id="reloadBtn" class="tab" style="padding: 7px 10px;">Reload assets</button>
+        </div>
+        <div class="panel-body">
+          <label for="tileSelect">Tile</label>
+          <select id="tileSelect"></select>
+
+          <label for="classSelect">Class</label>
+          <select id="classSelect"></select>
+
+          <label>Method</label>
+          <div id="methodTabs" class="tabs"></div>
+
+          <div style="margin-top: 12px" class="hint">
+            <b>Flashlight:</b> move your mouse over the canvas. The selected method appears inside the lens. Scroll to change lens radius.
+            <br />
+            <b>Tip:</b> Confidence assumes grayscale intensity maps to <i>confidence</i> (white = high). If you exported <i>uncertainty</i> (white = risky), set that in the manifest.
+          </div>
+
+          <label style="margin-top: 14px;">View Mode</label>
+          <div class="tabs">
+            <div id="modeLens" class="tab active">Lens</div>
+            <div id="modeFull" class="tab">Full Overlay</div>
+          </div>
+
+          <div class="kpi">
+            <div class="card">
+              <div class="label">Lens Radius</div>
+              <div id="lensRadius" class="value">80 px</div>
+            </div>
+            <div class="card">
+              <div class="label">Pixel Meaning</div>
+              <div id="confidenceMeaning" class="value">confidence</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Viewer</h2>
+          <div class="hint" id="status">Loading…</div>
+        </div>
+        <div class="panel-body" style="padding: 0">
+          <div class="canvas-wrap">
+            <canvas id="viewer"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" style="grid-column: 1 / span 2">
+        <div class="panel-header">
+          <h2>Risk Histogram (from confidence image)</h2>
+          <div class="hint">Brush low-confidence range to highlight “risky” pixels inside the lens.</div>
+        </div>
+        <div class="panel-body">
+          <svg id="hist"></svg>
+        </div>
+      </section>
+    </div>
+
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>
