@@ -1,4 +1,6 @@
 # Segmentation Detective
+[Presentation](https://docs.google.com/presentation/d/1iJKn1WSJIAU8xcSUmP7fekCoIqgEgHhuvHjB3zIH0_g/edit?usp=sharing)
+
 Segmentation Detective has two parts:
 
 1. **A lightweight D3/Canvas UI** for browsing pre-exported tiles + XAI layers.
